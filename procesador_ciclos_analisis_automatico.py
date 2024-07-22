@@ -258,23 +258,24 @@ else:
 #%% DETERMINACION DE LA TRANSICION DE FASE
 if Transicion_de_fase==1:
     T_m = temp_m
-    dT_dt = np.gradient(temperatura_interpolada, tiempo_interpolado)
+    dT_dt = np.gradient(T_m,time_m)
     
     filtro_T = (-1,0.5)     #ºC 
     filtro_dT_dt=0.5 #ºC/s
-    indx=np.nonzero((temperatura_interpolada>filtro_T[0])&(temperatura_interpolada<filtro_T[1])&(dT_dt>0)&(dT_dt <= filtro_dT_dt))
+    indx_TF=np.nonzero((T_m>filtro_T[0])&(T_m<filtro_T[1])&(abs(dT_dt)<filtro_dT_dt))
 
-    indx_TF= np.nonzero((time_m > tiempo_interpolado[indx[0][0]]) & (time_m <= tiempo_interpolado[indx[0][-1]]))
+    indx_TF_interp= np.nonzero((tiempo_interpolado>=time_m[indx_TF[0][0]]) & ( tiempo_interpolado<= time_m[indx_TF[0][-1]]))
     t_tf= round(time_m[indx_TF[0][-1]] - time_m[indx_TF[0][0]],2)
-
+    t_tf_interp= round(tiempo_interpolado[indx_TF_interp[0][-1]] - tiempo_interpolado[indx_TF_interp[0][0]],2)
 
     fig,(ax,ax2)= plt.subplots(nrows=2,figsize=(10,8),sharex=True,constrained_layout=True)
-    ax.plot(time_m,T_m , '.-',label='Temperatura')
-    ax.axvspan(tiempo_interpolado[indx[0][0]],tiempo_interpolado[indx[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase ({filtro_T[0]}<T<{filtro_T[1]} ºC)',zorder=0)
-    ax.plot(time_m[indx_TF],T_m[indx_TF] , 'g.-')
+    ax.plot(time_m,T_m , '.-',label='Temperatura',zorder=2)
+    ax.plot(time_m[indx_TF], T_m[indx_TF], 'go-',label='Transicion de Fase',zorder=1)
+    ax.axvspan(tiempo_interpolado[indx_TF_interp[0][0]],tiempo_interpolado[indx_TF_interp[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase ({filtro_T[0]}<T<{filtro_T[1]} ºC)',zorder=0)
+    # ax.plot(time_m[indx_TF],T_m[indx_TF] , 'g.-')
 
-    ax2.plot(tiempo_interpolado,dT_dt , 'o-',label='dT/dt')
-    ax2.axvspan(tiempo_interpolado[indx[0][0]],tiempo_interpolado[indx[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase (|dT/dt| <{filtro_dT_dt} ºC/s)',zorder=-2)
+    ax2.plot(time_m,dT_dt , '.-',label='dT/dt')
+    ax2.axvspan(tiempo_interpolado[indx_TF_interp[0][0]],tiempo_interpolado[indx_TF_interp[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase (|dT/dt| <{filtro_dT_dt} ºC/s)',zorder=-2)
     ax2.axhline(y=filtro_dT_dt, color='k',lw=1, linestyle='--')
     ax2.axhline(y=-filtro_dT_dt, color='k',lw=1, linestyle='--')
     ax2.set_xlabel('t (s)')
@@ -291,7 +292,7 @@ if Transicion_de_fase==1:
     # Inset 
     axin = ax.inset_axes([0.5, 0.1, 0.49, 0.45])  
     axin.plot(time_m[indx_TF], T_m[indx_TF], 'go-',label=f'T Fase: {t_tf} s')
-    axin.plot(time_m, T_m, '.-')
+    axin.plot(time_m, T_m, 'k-')
     axin.axhline(y=filtro_T[0], color='k',lw=1, linestyle='--')
     axin.axhline(y=filtro_T[1], color='k',lw=1, linestyle='--')
     axin.grid()
@@ -996,7 +997,7 @@ ax[2].set_ylabel('Magnetizacion Remanente')
 ax[2].set_xlabel('T (°C)')
 
 for a in ax:
-    a.axvspan(temperatura_interpolada[indx[0][0]],temperatura_interpolada[indx[0][-1]],color='tab:red',alpha=0.4,label='T Fase',zorder=2)
+    a.axvspan(temperatura_interpolada[indx_TF_interp[0][0]],temperatura_interpolada[indx_TF_interp[0][-1]],color='tab:red',alpha=0.4,label='T Fase',zorder=2)
     a.legend(ncol=2)
     a.grid()
 
@@ -1020,7 +1021,7 @@ ax[2].set_ylabel('Magnetizacion Remanente')
 ax[2].set_xlabel('t (s)')
 
 for a in ax:
-    a.axvspan(tiempo_interpolado[indx[0][0]],tiempo_interpolado[indx[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase: {t_tf} s',zorder=-2)
+    a.axvspan(tiempo_interpolado[indx_TF_interp[0][0]],tiempo_interpolado[indx_TF_interp[0][-1]],color='tab:red',alpha=0.5,label=f'T Fase: {t_tf} s',zorder=-2)
     a.legend(ncol=2)
     a.grid()
     
